@@ -28,9 +28,15 @@ const updateNodeExecutionSchema = Joi.object({
   errorMessage: Joi.string().optional().allow(null),
 });
 
+const createWorkflowRunBodySchema = createWorkflowRunSchema;
+
+const updateWorkflowRunBodySchema = updateWorkflowRunSchema;
+
 module.exports = {
   createWorkflowRunSchema,
   updateWorkflowRunSchema,
   createNodeExecutionSchema,
   updateNodeExecutionSchema,
+  createWorkflowRunBodySchema,
+  updateWorkflowRunBodySchema,
 };

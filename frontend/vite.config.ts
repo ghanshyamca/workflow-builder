@@ -31,10 +31,30 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    minify: 'terser',
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui': ['@headlessui/react', '@heroicons/react'],
+          'state': ['@reduxjs/toolkit', 'react-redux'],
+          'flow': ['reactflow'],
+        },
+      },
+    },
     terserOptions: {
       compress: {
         drop_console: true,
+        drop_debugger: true,
+      },
+      format: {
+        comments: false,
       },
     },
+  },
+  define: {
+    // Optimize global defines for production
+    __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
 })

@@ -1,15 +1,10 @@
 const workflowService = require('../../services/workflow.service');
-const { createWorkflowSchema, updateWorkflowSchema } = require('../validators/workflow.validator');
+const triggerService = require('../../services/trigger.service');
 
 const create = async (req, res) => {
   try {
-    const { error, value } = createWorkflowSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ status: 'error', message: 'Validation error', details: error.details });
-    }
-
     const userId = req.user.userId;
-    const wf = await workflowService.createWorkflow(userId, value);
+    const wf = await workflowService.createWorkflow(userId, req.body);
     res.status(201).json({ status: 'success', data: wf });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });
@@ -42,14 +37,9 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const { error, value } = updateWorkflowSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ status: 'error', message: 'Validation error', details: error.details });
-    }
-
     const id = req.params.id;
     const userId = req.user.userId;
-    const wf = await workflowService.updateWorkflow(id, userId, value);
+    const wf = await workflowService.updateWorkflow(id, userId, req.body);
     res.json({ status: 'success', data: wf });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });
@@ -133,7 +123,7 @@ const createTrigger = async (req, res) => {
   try {
     const workflowId = req.params.id;
     const userId = req.user.userId;
-    const trigger = await workflowService.createTrigger(workflowId, userId, req.body);
+    const trigger = await triggerService.createTrigger(workflowId, userId, req.body);
     res.status(201).json({ status: 'success', data: trigger });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });
@@ -145,7 +135,7 @@ const listTriggers = async (req, res) => {
   try {
     const workflowId = req.params.id;
     const userId = req.user.userId;
-    const triggers = await workflowService.getTriggers(workflowId, userId);
+    const triggers = await triggerService.listTriggers(workflowId, userId);
     res.json({ status: 'success', data: triggers });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });

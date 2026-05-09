@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 require('express-async-errors');
 require('dotenv').config();
 
+const env = require('./config/environment');
 const logger = require('./utils/logger');
 const errorHandler = require('./api/middleware/errorHandler');
 const authMiddleware = require('./api/middleware/auth');
@@ -17,7 +18,7 @@ const triggerRoutes = require('./api/routes/triggers');
 const executionRoutes = require('./api/routes/executions');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = env.port;
 
 // Security middleware
 app.use(helmet());
@@ -25,14 +26,14 @@ app.use(compression());
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
-  credentials: process.env.CORS_CREDENTIALS === 'true',
+  origin: env.cors.origin,
+  credentials: env.cors.credentials,
 }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  windowMs: env.rateLimit.windowMs,
+  max: env.rateLimit.maxRequests,
   message: 'Too many requests from this IP, please try again later.',
 });
 
@@ -64,7 +65,7 @@ app.get('/health', (req, res) => {
 // API version endpoint
 app.get('/api/version', (req, res) => {
   res.json({
-    version: process.env.API_VERSION || 'v1',
+    version: env.apiVersion,
     name: 'Workflow Builder API',
     description: 'Workflow automation platform backend',
   });
@@ -88,35 +89,61 @@ app.use((req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`, {
-    environment: process.env.NODE_ENV,
-    port: PORT,
+// Start server unless running tests
+let server = null;
+if (env.nodeEnv !== 'test') {
+  server = app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`, {
+      environment: env.nodeEnv,
+      port: PORT,
+    });
   });
-});
+
+  // Start scheduler (schedules active cron triggers). Skip in tests.
+  try {
+    require('./workers/scheduler');
+  } catch (e) {
+    logger.error('Failed to start scheduler worker', { error: e.message });
+  }
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
+  if (server) server.close(() => {
     logger.info('HTTP server closed');
-    process.exit(0);
+    // close DB pool then exit
+    try {
+      const pool = require('./config/database');
+      pool.end().finally(() => process.exit(0));
+    } catch (e) {
+      process.exit(0);
+    }
   });
 });
 
 process.on('SIGINT', () => {
   logger.info('SIGINT signal received: closing HTTP server');
-  server.close(() => {
+  if (server) server.close(() => {
     logger.info('HTTP server closed');
-    process.exit(0);
+    try {
+      const pool = require('./config/database');
+      pool.end().finally(() => process.exit(0));
+    } catch (e) {
+      process.exit(0);
+    }
   });
 });
 
 // Unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   logger.error('Unhandled Promise Rejection:', err);
-  process.exit(1);
+  try {
+    const pool = require('./config/database');
+    pool.end().finally(() => process.exit(1));
+  } catch (e) {
+    process.exit(1);
+  }
 });
 
 module.exports = app;

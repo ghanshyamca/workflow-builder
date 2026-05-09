@@ -1,16 +1,10 @@
 const executionService = require('../../services/execution.service');
-const { createWorkflowRunSchema, updateWorkflowRunSchema } = require('../validators/execution.validator');
 const logger = require('../../utils/logger');
 
 // Create workflow run
 const createWorkflowRun = async (req, res, next) => {
   try {
-    const { error, value } = createWorkflowRunSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-    
-    const run = await executionService.createWorkflowRun(req.user.userId, value);
+    const run = await executionService.createWorkflowRun(req.user.userId, req.body);
     logger.info(`Workflow run created: ${run.id} for workflow: ${run.workflow_id}`);
     
     return res.status(201).json(run);
@@ -53,19 +47,14 @@ const getWorkflowRun = async (req, res, next) => {
 const updateWorkflowRunStatus = async (req, res, next) => {
   try {
     const { runId } = req.params;
-    const { error, value } = updateWorkflowRunSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-    
     const run = await executionService.updateWorkflowRunStatus(
       runId,
       req.user.userId,
-      value.status,
-      value.errorMessage
+      req.body.status,
+      req.body.errorMessage
     );
     
-    logger.info(`Workflow run ${runId} updated to status: ${value.status}`);
+    logger.info(`Workflow run ${runId} updated to status: ${req.body.status}`);
     
     return res.status(200).json(run);
   } catch (err) {

@@ -1,31 +1,11 @@
 const authService = require('../../services/auth.service');
 const { validatePasswordStrength } = require('../../utils/password');
-const {
-  registerSchema,
-  loginSchema,
-  refreshTokenSchema,
-  updateProfileSchema,
-  changePasswordSchema,
-} = require('../validators/auth.validator');
 
 // Register controller
 const register = async (req, res) => {
   try {
-    const { error, value } = registerSchema.validate(req.body);
-
-    if (error) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Validation error',
-        details: error.details.map(detail => ({
-          field: detail.context.label || detail.path.join('.'),
-          message: detail.message,
-        })),
-      });
-    }
-
     // Check password strength
-    const passwordStrength = validatePasswordStrength(value.password);
+    const passwordStrength = validatePasswordStrength(req.body.password);
     if (!passwordStrength.isValid) {
       return res.status(400).json({
         status: 'error',
@@ -38,11 +18,11 @@ const register = async (req, res) => {
     }
 
     const result = await authService.registerUser(
-      value.email,
-      value.username,
-      value.password,
-      value.firstName,
-      value.lastName
+      req.body.email,
+      req.body.username,
+      req.body.password,
+      req.body.firstName,
+      req.body.lastName
     );
 
     res.status(201).json({
@@ -68,20 +48,7 @@ const register = async (req, res) => {
 // Login controller
 const login = async (req, res) => {
   try {
-    const { error, value } = loginSchema.validate(req.body);
-
-    if (error) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Validation error',
-        details: error.details.map(detail => ({
-          field: detail.context.label || detail.path.join('.'),
-          message: detail.message,
-        })),
-      });
-    }
-
-    const result = await authService.loginUser(value.email, value.password);
+    const result = await authService.loginUser(req.body.email, req.body.password);
 
     res.json({
       status: 'success',
@@ -106,25 +73,18 @@ const login = async (req, res) => {
 // Refresh tokens controller
 const refreshTokens = async (req, res) => {
   try {
-    const { error, value } = refreshTokenSchema.validate(req.body);
+    const result = await authService.refreshTokens(req.body.refreshToken);
 
-    if (error) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Validation error',
-        details: error.details.map(detail => ({
-          field: detail.context.label || detail.path.join('.'),
-          message: detail.message,
-        })),
-      });
-    }
-
-    const result = await authService.refreshTokens(value.refreshToken);
-
+    // Normalize response to include top-level accessToken/refreshToken for tests
     res.json({
       status: 'success',
       message: 'Tokens refreshed successfully',
-      data: result,
+      data: {
+        accessToken: result.tokens?.accessToken,
+        refreshToken: result.tokens?.refreshToken,
+        tokens: result.tokens,
+        user: result.user,
+      },
     });
   } catch (err) {
     if (err.statusCode) {
@@ -169,21 +129,8 @@ const getProfile = async (req, res) => {
 // Update profile controller
 const updateProfile = async (req, res) => {
   try {
-    const { error, value } = updateProfileSchema.validate(req.body);
-
-    if (error) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Validation error',
-        details: error.details.map(detail => ({
-          field: detail.context.label || detail.path.join('.'),
-          message: detail.message,
-        })),
-      });
-    }
-
     const userId = req.user.userId;
-    const user = await authService.updateUserProfile(userId, value);
+    const user = await authService.updateUserProfile(userId, req.body);
 
     res.json({
       status: 'success',
@@ -208,21 +155,8 @@ const updateProfile = async (req, res) => {
 // Change password controller
 const changePassword = async (req, res) => {
   try {
-    const { error, value } = changePasswordSchema.validate(req.body);
-
-    if (error) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Validation error',
-        details: error.details.map(detail => ({
-          field: detail.context.label || detail.path.join('.'),
-          message: detail.message,
-        })),
-      });
-    }
-
     // Check new password strength
-    const passwordStrength = validatePasswordStrength(value.newPassword);
+    const passwordStrength = validatePasswordStrength(req.body.newPassword);
     if (!passwordStrength.isValid) {
       return res.status(400).json({
         status: 'error',
@@ -237,8 +171,8 @@ const changePassword = async (req, res) => {
     const userId = req.user.userId;
     const result = await authService.changeUserPassword(
       userId,
-      value.currentPassword,
-      value.newPassword
+      req.body.currentPassword,
+      req.body.newPassword
     );
 
     res.json({

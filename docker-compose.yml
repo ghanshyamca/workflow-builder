@@ -3,6 +3,8 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: workflow-builder-db
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
@@ -43,6 +45,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: workflow-builder-api
+    env_file:
+      - .env
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 3000
@@ -83,7 +87,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3000}
+        VITE_APP_NAME: ${VITE_APP_NAME:-Workflow Builder}
     container_name: workflow-builder-ui
+    env_file:
+      - .env
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api}
       VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3000}

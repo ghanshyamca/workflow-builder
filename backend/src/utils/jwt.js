@@ -1,9 +1,5 @@
 const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
-const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key';
-const JWT_REFRESH_EXPIRE = process.env.JWT_REFRESH_EXPIRE || '30d';
+const env = require('../config/environment');
 
 // Generate access token
 const generateAccessToken = (userId, email, username) => {
@@ -14,8 +10,8 @@ const generateAccessToken = (userId, email, username) => {
     type: 'access',
   };
 
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRE,
+  return jwt.sign(payload, env.jwt.secret, {
+    expiresIn: env.jwt.expire,
   });
 };
 
@@ -26,8 +22,8 @@ const generateRefreshToken = (userId) => {
     type: 'refresh',
   };
 
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
-    expiresIn: JWT_REFRESH_EXPIRE,
+  return jwt.sign(payload, env.jwt.refreshSecret, {
+    expiresIn: env.jwt.refreshExpire,
   });
 };
 
@@ -39,7 +35,7 @@ const generateTokens = (userId, email, username) => {
   return {
     accessToken,
     refreshToken,
-    expiresIn: getTokenExpiry(JWT_EXPIRE),
+    expiresIn: getTokenExpiry(env.jwt.expire),
     tokenType: 'Bearer',
   };
 };
@@ -47,7 +43,7 @@ const generateTokens = (userId, email, username) => {
 // Verify access token
 const verifyAccessToken = (token) => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, env.jwt.secret);
     if (decoded.type !== 'access') {
       throw new Error('Invalid token type');
     }
@@ -60,7 +56,7 @@ const verifyAccessToken = (token) => {
 // Verify refresh token
 const verifyRefreshToken = (token) => {
   try {
-    const decoded = jwt.verify(token, JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(token, env.jwt.refreshSecret);
     if (decoded.type !== 'refresh') {
       throw new Error('Invalid token type');
     }

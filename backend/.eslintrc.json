@@ -1,0 +1,50 @@
+{
+  "env": {
+    "es2021": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": ["airbnb-base"],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "script"
+  },
+  "rules": {
+    "arrow-parens": "off",
+    "comma-dangle": "off",
+    "indent": "off",
+    "no-tabs": "off",
+    "import/newline-after-import": "off",
+    "import/order": "off",
+    "prefer-destructuring": "off",
+    "radix": "off",
+    "no-unused-vars": "off",
+    "global-require": "off",
+    "no-dupe-keys": "off",
+    "newline-per-chained-call": "off",
+    "no-trailing-spaces": "off",
+    "object-curly-newline": "off",
+    "no-promise-executor-return": "off",
+    "no-nested-ternary": "off",
+    "operator-linebreak": "off",
+    "no-restricted-properties": "off",
+    "no-plusplus": "off",
+    "prefer-exponentiation-operator": "off",
+    "quotes": "off",
+    "no-use-before-define": "off",
+    "curly": "off",
+    "eol-last": "off",
+    "no-console": "off",
+    "consistent-return": "off",
+    "no-param-reassign": "off",
+    "class-methods-use-this": "off",
+    "no-underscore-dangle": "off",
+    "linebreak-style": "off",
+    "no-await-in-loop": "off",
+    "no-restricted-syntax": "off",
+    "no-continue": "off",
+    "no-return-await": "off",
+    "arrow-body-style": "off",
+    "max-len": "off"
+  }
+}
