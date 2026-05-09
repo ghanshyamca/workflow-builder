@@ -31,6 +31,8 @@ This will:
 - Initialize PostgreSQL database
 - Connect all services
 
+The frontend image builds the Vite app inside Docker, so the `VITE_*` values are baked into the bundle during the image build.
+
 **Output should show:**
 ```
 workflow-builder-db   | database system is ready to accept connections
@@ -44,6 +46,7 @@ workflow-builder-ui | Accepting connections at http://localhost:3001
 - **Frontend UI**: http://localhost:3001
 - **Backend API**: http://localhost:3000
 - **Health Check**: http://localhost:3000/health
+- **Metrics**: http://localhost:3000/metrics
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 
@@ -143,6 +146,11 @@ CORS_ORIGIN=http://localhost:3001
 # Redis
 REDIS_HOST=redis
 REDIS_PORT=6379
+
+# Frontend build-time vars
+VITE_API_BASE_URL=http://localhost:3000/api
+VITE_WS_URL=ws://localhost:3000
+VITE_APP_NAME=Workflow Builder
 ```
 
 ### Ports
@@ -176,6 +184,7 @@ The Docker setup uses:
 - Alpine Linux images for efficiency
 - Health checks for automatic restarts
 - Proper signal handling
+- Frontend build-time environment variables are injected at Docker build time
 
 ## Image Sizes
 

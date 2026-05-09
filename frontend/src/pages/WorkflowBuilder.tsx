@@ -690,14 +690,24 @@ const WorkflowBuilder: React.FC = () => {
               fitView
             >
               <Controls />
-              <MiniMap 
-                zoomable 
-                pannable 
+              <MiniMap
+                zoomable
+                pannable
+                nodeColor={(n) => {
+                  const nodeType = (n?.data as any)?.nodeType || (n as any).type || ''
+                  if (nodeType === 'HTTP Request') return '#0ea5e9'
+                  if (nodeType === 'Condition') return '#f59e0b'
+                  if (nodeType === 'Delay') return '#8b5cf6'
+                  if (nodeType === 'Notify') return '#10b981'
+                  return '#94a3b8'
+                }}
+                nodeStrokeColor={() => '#00d4ee'}
+                maskColor="rgba(59,130,246,0.12)"
                 style={{
-                  backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                  border: '2px solid rgba(148, 163, 184, 0.5)',
+                  backgroundColor: 'rgba(20, 28, 40, 0.96)',
+                  border: '2px solid rgba(94, 234, 212, 0.6)',
                   borderRadius: '8px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
                 }}
               />
               <Background gap={20} size={1} color="#334155" />

@@ -103,6 +103,18 @@ const toggleTriggerActive = async (id, isActive) => {
   return result.rows[0];
 };
 
+// Get all active schedule triggers with workflow owner info
+const getActiveScheduleTriggers = async () => {
+  const query = `
+    SELECT t.*, w.user_id
+    FROM triggers t
+    JOIN workflows w ON w.id = t.workflow_id
+    WHERE t.trigger_type = 'schedule' AND t.is_active = true
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+};
+
 module.exports = {
   createTrigger,
   getTriggersByWorkflow,
@@ -111,4 +123,5 @@ module.exports = {
   updateLastTriggeredAt,
   deleteTrigger,
   toggleTriggerActive,
+  getActiveScheduleTriggers,
 };

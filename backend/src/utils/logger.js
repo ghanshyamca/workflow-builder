@@ -1,8 +1,20 @@
 const winston = require('winston');
 const path = require('path');
+const fs = require('fs');
+const env = require('../config/environment');
 
-const logDir = process.env.LOG_DIR || './logs';
-const logLevel = process.env.LOG_LEVEL || 'info';
+const logDir = env.logging.dir;
+const logLevel = env.logging.level;
+
+// Ensure log directory exists
+try {
+  if (logDir) fs.mkdirSync(logDir, { recursive: true });
+} catch (e) {
+  // If we cannot create logs directory, fallback to console-only logging
+  // but do not crash the process.
+  // eslint-disable-next-line no-console
+  console.warn('Could not create log directory', e.message);
+}
 
 // Custom format for console
 const consoleFormat = winston.format.combine(

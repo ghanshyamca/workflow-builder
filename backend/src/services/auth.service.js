@@ -9,7 +9,7 @@ const registerUser = async (email, username, password, firstName, lastName) => {
     // Check if user already exists
     const existingUser = await User.userExists(email, username);
     if (existingUser) {
-      const error = new Error('User with this email or username already exists');
+      const error = new Error('User already exists');
       error.statusCode = 409; // Conflict
       throw error;
     }
@@ -52,8 +52,8 @@ const loginUser = async (email, password) => {
     const user = await User.getUserByEmail(email);
 
     if (!user) {
-      const error = new Error('Invalid email or password');
-      error.statusCode = 401; // Unauthorized
+      const error = new Error('User not found');
+      error.statusCode = 404; // Not Found
       throw error;
     }
 

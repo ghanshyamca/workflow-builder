@@ -6,6 +6,7 @@ const errorHandler = (err, req, res, next) => {
     stack: err.stack,
     path: req.path,
     method: req.method,
+    requestId: req.requestId,
   });
 
   // Validation error
@@ -13,6 +14,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({
       status: 'error',
       message: 'Validation error',
+      requestId: req.requestId,
       details: err.details.map(detail => ({
         field: detail.context.label || detail.path.join('.'),
         message: detail.message,
@@ -25,6 +27,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(401).json({
       status: 'error',
       message: 'Invalid token',
+      requestId: req.requestId,
     });
   }
 
@@ -32,6 +35,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(401).json({
       status: 'error',
       message: 'Token expired',
+      requestId: req.requestId,
     });
   }
 
@@ -40,6 +44,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(409).json({
       status: 'error',
       message: 'Duplicate entry',
+      requestId: req.requestId,
       field: err.detail,
     });
   }
@@ -48,6 +53,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(400).json({
       status: 'error',
       message: 'Invalid reference',
+      requestId: req.requestId,
       detail: err.detail,
     });
   }
@@ -57,7 +63,8 @@ const errorHandler = (err, req, res, next) => {
     return res.status(err.statusCode).json({
       status: 'error',
       message: err.message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+      requestId: req.requestId,
+      ...(require('../../config/environment').nodeEnv === 'development' && { stack: err.stack }),
     });
   }
 
@@ -65,7 +72,8 @@ const errorHandler = (err, req, res, next) => {
   res.status(500).json({
     status: 'error',
     message: 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    requestId: req.requestId,
+    ...(require('../../config/environment').nodeEnv === 'development' && { stack: err.stack }),
   });
 };
 

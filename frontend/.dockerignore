@@ -17,6 +17,7 @@ temp
 README.md
 .eslintignore
 .eslintrc
-vite.config.ts
-tsconfig*.json
-vitest.config.ts
+# Allow vite and tsconfig in build context so Vite aliases and TS paths work
+# vite.config.ts
+# tsconfig*.json
+# vitest.config.ts

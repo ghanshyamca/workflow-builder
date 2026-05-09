@@ -1,15 +1,9 @@
 const triggerService = require('../../services/trigger.service');
-const { createTriggerSchema, updateTriggerSchema } = require('../validators/trigger.validator');
 
 const create = async (req, res) => {
   try {
-    const { error, value } = createTriggerSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ status: 'error', message: 'Validation error', details: error.details });
-    }
-
     const userId = req.user.userId;
-    const trigger = await triggerService.createTrigger(value.workflowId, userId, value);
+    const trigger = await triggerService.createTrigger(req.body.workflowId, userId, req.body);
     res.status(201).json({ status: 'success', data: trigger });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });
@@ -23,10 +17,6 @@ const list = async (req, res) => {
     const userId = req.user.userId;
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
-
-    if (!workflowId) {
-      return res.status(400).json({ status: 'error', message: 'workflowId is required' });
-    }
 
     const triggers = await triggerService.listTriggers(workflowId, userId, { limit, offset });
     res.json({ status: 'success', data: triggers });
@@ -50,14 +40,9 @@ const get = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const { error, value } = updateTriggerSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ status: 'error', message: 'Validation error', details: error.details });
-    }
-
     const { id } = req.params;
     const userId = req.user.userId;
-    const trigger = await triggerService.updateTrigger(id, userId, value);
+    const trigger = await triggerService.updateTrigger(id, userId, req.body);
     res.json({ status: 'success', data: trigger });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });
@@ -80,14 +65,8 @@ const remove = async (req, res) => {
 const toggle = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isActive } = req.body;
-    
-    if (typeof isActive !== 'boolean') {
-      return res.status(400).json({ status: 'error', message: 'isActive must be a boolean' });
-    }
-
     const userId = req.user.userId;
-    const trigger = await triggerService.toggleTriggerActive(id, userId, isActive);
+    const trigger = await triggerService.toggleTriggerActive(id, userId, req.body.isActive);
     res.json({ status: 'success', data: trigger });
   } catch (err) {
     if (err.statusCode) return res.status(err.statusCode).json({ status: 'error', message: err.message });

@@ -1,14 +1,15 @@
 const { Pool } = require('pg');
-require('dotenv').config();
+const env = require('./environment');
 
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'workflow_builder',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  max: parseInt(process.env.DB_POOL_MAX) || 10,
-  min: parseInt(process.env.DB_POOL_MIN) || 2,
+  host: env.database.host,
+  port: env.database.port,
+  database: env.database.name,
+  user: env.database.user,
+  password: env.database.password,
+  max: env.database.poolMax,
+  min: env.database.poolMin,
+  allowExitOnIdle: true,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 });

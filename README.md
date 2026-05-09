@@ -129,7 +129,6 @@ npm run dev           # Start app (http://localhost:3001)
 
 - [Backend README](./backend/README.md) - API documentation and setup
 - [Frontend README](./frontend/README.md) - UI setup and component guide
-- [PROJECT_PLAN.md](./PROJECT_PLAN.md) - Development roadmap and implementation phases
 
 ## 🛠 Technology Stack
 

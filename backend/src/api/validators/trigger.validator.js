@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const cron = require('node-cron');
 
 // Webhook trigger schema
 const webhookTriggerSchema = Joi.object({
@@ -14,10 +15,18 @@ const scheduleTriggerSchema = Joi.object({
   workflowId: Joi.string().uuid().required(),
   triggerType: Joi.string().valid('schedule').required(),
   cronExpression: Joi.string()
-    .regex(/^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$/)
+    .custom((value, helpers) => {
+      const expression = String(value || '').trim();
+
+      if (!cron.validate(expression)) {
+        return helpers.error('string.pattern.base');
+      }
+
+      return expression;
+    })
     .required()
     .messages({
-      'string.pattern.base': 'cronExpression must be a valid cron pattern (mm hh dd MM DOW)',
+      'string.pattern.base': 'cronExpression must be a valid cron pattern with 5 or 6 fields',
     }),
   timezone: Joi.string().default('UTC'),
   isActive: Joi.boolean().optional(),
@@ -25,6 +34,16 @@ const scheduleTriggerSchema = Joi.object({
 
 // Create trigger schema (supports both webhook and schedule)
 const createTriggerSchema = Joi.alternatives().try(webhookTriggerSchema, scheduleTriggerSchema).required();
+
+const listTriggerQuerySchema = Joi.object({
+  workflowId: Joi.string().uuid().required(),
+  limit: Joi.number().integer().min(1).max(100).optional(),
+  offset: Joi.number().integer().min(0).optional(),
+});
+
+const toggleTriggerSchema = Joi.object({
+  isActive: Joi.boolean().required(),
+});
 
 // Update trigger schema (all fields optional except workflowId)
 const updateTriggerSchema = Joi.object({
@@ -39,6 +58,8 @@ const updateTriggerSchema = Joi.object({
 module.exports = {
   createTriggerSchema,
   updateTriggerSchema,
+  listTriggerQuerySchema,
+  toggleTriggerSchema,
   webhookTriggerSchema,
   scheduleTriggerSchema,
 };

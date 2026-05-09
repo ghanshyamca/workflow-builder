@@ -36,7 +36,7 @@ export const ExecutionDetail: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState<NodeExecution | null>(null)
   const [pausing, setPausing] = useState(false)
   const [resuming, setResuming] = useState(false)
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     if (!workflowId || !runId) return
@@ -56,20 +56,27 @@ export const ExecutionDetail: React.FC = () => {
     }
 
     fetchExecution()
-
     // Poll for updates if execution is still running
-    const setupPolling = () => {
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
-      
+    const startPolling = (pollRunId?: string) => {
+      const id = pollRunId || runId
+      if (!id) return
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current)
+        pollIntervalRef.current = null
+      }
+
       pollIntervalRef.current = setInterval(async () => {
         try {
-          const response = await api.getExecution(runId)
+          const response = await api.getExecution(id)
           setExecution(response.data.run)
           setNodes(response.data.nodes)
 
-          // Stop polling if execution is complete
+          // Stop polling if execution is complete or paused
           if (['completed', 'failed', 'paused'].includes(response.data.run.status)) {
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+            if (pollIntervalRef.current) {
+              clearInterval(pollIntervalRef.current)
+              pollIntervalRef.current = null
+            }
           }
         } catch (err) {
           console.error('Polling error:', err)
@@ -77,10 +84,13 @@ export const ExecutionDetail: React.FC = () => {
       }, 1000)
     }
 
-    setupPolling()
+    startPolling()
 
     return () => {
-      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current)
+        pollIntervalRef.current = null
+      }
     }
   }, [workflowId, runId])
 
@@ -91,6 +101,11 @@ export const ExecutionDetail: React.FC = () => {
       await api.pauseWorkflow(workflowId, runId)
       const response = await api.getExecution(runId)
       setExecution(response.data.run)
+      // Stop polling immediately when paused
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current)
+        pollIntervalRef.current = null
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to pause workflow')
     } finally {
@@ -105,6 +120,28 @@ export const ExecutionDetail: React.FC = () => {
       await api.resumeWorkflow(workflowId, runId)
       const response = await api.getExecution(runId)
       setExecution(response.data.run)
+      // Restart polling if the run is running again
+      if (response.data.run.status === 'running') {
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current)
+          pollIntervalRef.current = null
+        }
+        pollIntervalRef.current = setInterval(async () => {
+          try {
+            const r = await api.getExecution(runId)
+            setExecution(r.data.run)
+            setNodes(r.data.nodes)
+            if (['completed', 'failed', 'paused'].includes(r.data.run.status)) {
+              if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current)
+                pollIntervalRef.current = null
+              }
+            }
+          } catch (err) {
+            console.error('Polling error:', err)
+          }
+        }, 1000)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resume workflow')
     } finally {
@@ -320,3 +357,5 @@ export const ExecutionDetail: React.FC = () => {
     </div>
   )
 }
+
+export default ExecutionDetail

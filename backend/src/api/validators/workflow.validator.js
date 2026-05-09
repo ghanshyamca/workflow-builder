@@ -13,7 +13,12 @@ const updateWorkflowSchema = Joi.object({
   status: Joi.string().valid('draft', 'published'),
 });
 
+const executeWorkflowSchema = Joi.object({
+  payload: Joi.object().optional(),
+}).unknown(true);
+
 module.exports = {
   createWorkflowSchema,
   updateWorkflowSchema,
+  executeWorkflowSchema,
 };
