@@ -1,0 +1,43 @@
+# Backend
+backend/node_modules/
+backend/package-lock.json
+backend/.env
+backend/logs/
+backend/dist/
+backend/coverage/
+
+# Frontend
+frontend/node_modules/
+frontend/package-lock.json
+frontend/.env
+frontend/dist/
+frontend/coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Cache
+.eslintcache
+
+# Temp
+tmp/
+temp/
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
