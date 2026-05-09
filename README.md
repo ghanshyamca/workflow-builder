@@ -228,36 +228,6 @@ npm run build           # Build production bundle
 docker-compose up       # Runs both backend and frontend
 ```
 
-## 📈 Development Roadmap
-
-### Phase 1-5: Backend Core (Weeks 1-3)
-- ✅ Project setup and architecture
-- Auth system
-- Workflow management APIs
-- Trigger system
-- Node implementations
-
-### Phase 6-12: Backend Advanced (Weeks 4-7)
-- Execution engine
-- Monitoring and logging
-- Error handling
-- Testing and deployment
-
-### Phase 13-21: Frontend (Weeks 8-13)
-- Project setup
-- Workflow canvas
-- Workflow list and management
-- Execution monitoring
-- Node configuration UI
-
-### Phase 22-24: Integration & Demo (Weeks 14-15)
-- Full-stack testing
-- Deployment
-- Documentation
-- Demonstration video
-
-See [PROJECT_PLAN.md](PROJECT_PLAN.md) for detailed roadmap.
-
 ## 🤝 Contributing
 
 1. Create feature branch: `git checkout -b feature/feature-name`
